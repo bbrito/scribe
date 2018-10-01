@@ -77,7 +77,7 @@ class Model():
 			kappa_term = tf.square( tf.subtract(kappa,u))
 			exp_term = tf.multiply(-beta,kappa_term)
 			phi_k = tf.multiply(alpha, tf.exp(exp_term))
-			phi = tf.reduce_sum(phi_k,1, keep_dims=True)
+			phi = tf.reduce_sum(phi_k,1, keepdims=True)
 			return phi # phi ~ [?,1,ascii_steps]
 
 		def get_window_params(i, out_cell0, kmixtures, prev_kappa, reuse=True):
@@ -93,7 +93,7 @@ class Model():
 			kappa = kappa + prev_kappa
 			return alpha, beta, kappa # each ~ [?,kmixtures,1]
 
-		self.init_kappa = tf.placeholder(dtype=tf.float32, shape=[None, self.kmixtures, 1]) 
+		self.init_kappa = tf.placeholder(dtype=tf.float32, shape=[None, self.kmixtures, 1])
 		self.char_seq = tf.placeholder(dtype=tf.float32, shape=[None, self.ascii_steps, self.char_vec_len])
 		prev_kappa = self.init_kappa
 		prev_window = self.char_seq[:,0,:]
@@ -148,7 +148,7 @@ class Model():
 			# define loss function (eq 26 of http://arxiv.org/abs/1308.0850)
 			gaussian = gaussian2d(x1_data, x2_data, mu1, mu2, sigma1, sigma2, rho)
 			term1 = tf.multiply(gaussian, pi)
-			term1 = tf.reduce_sum(term1, 1, keep_dims=True) #do inner summation
+			term1 = tf.reduce_sum(term1, 1, keepdims=True) #do inner summation
 			term1 = -tf.log(tf.maximum(term1, 1e-20)) # some errors are zero -> numerical errors.
 
 			term2 = tf.multiply(eos, eos_data) + tf.multiply(1-eos, 1-eos_data) #modified Bernoulli -> eos probability
@@ -198,7 +198,11 @@ class Model():
 		self.train_op = self.optimizer.apply_gradients(zip(grads, tvars))
 
 		# ----- some TensorFlow I/O
-		self.sess = tf.InteractiveSession()
+		self.config = tf.ConfigProto(
+			device_count={'GPU': 0} # 1 using gpu only, 0 using cpu only
+		)
+
+		self.sess = tf.InteractiveSession(config=tf.ConfigProto(log_device_placement=True))
 		self.saver = tf.train.Saver(tf.global_variables())
 		self.sess.run(tf.global_variables_initializer())
 

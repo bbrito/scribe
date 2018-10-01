@@ -40,8 +40,8 @@ def main():
 
 	#book-keeping
 	parser.add_argument('--data_scale', type=int, default=50, help='amount to scale data down before training')
-	parser.add_argument('--log_dir', type=str, default='./logs/', help='location, relative to execution, of log files')
-	parser.add_argument('--data_dir', type=str, default='./data', help='location, relative to execution, of data')
+	parser.add_argument('--log_dir', type=str, default='logs/', help='location, relative to execution, of log files')
+	parser.add_argument('--data_dir', type=str, default='data', help='location, relative to execution, of data')
 	parser.add_argument('--save_path', type=str, default='saved/model.ckpt', help='location to save model')
 	parser.add_argument('--save_every', type=int, default=500, help='number of batches between each save')
 
@@ -61,7 +61,7 @@ def train_model(args):
 	logger.write("{}\n".format(args))
 	logger.write("loading data...")
 	data_loader = DataLoader(args, logger=logger)
-	
+
 	logger.write("building model...")
 	model = Model(args, logger=logger)
 
@@ -84,7 +84,7 @@ def train_model(args):
 		kappa = np.zeros((args.batch_size, args.kmixtures, 1))
 
 		for b in range(global_step%args.nbatches, args.nbatches):
-			
+
 			i = e * args.nbatches + b
 			if global_step is not 0 : i+=1 ; global_step = 0
 
@@ -102,7 +102,7 @@ def train_model(args):
 			feed.update(valid_inputs)
 			feed[model.init_kappa] = np.zeros((args.batch_size, args.kmixtures, 1))
 			[valid_loss] = model.sess.run([model.cost], feed)
-			
+
 			running_average = running_average*remember_rate + train_loss*(1-remember_rate)
 
 			end = time.time()
